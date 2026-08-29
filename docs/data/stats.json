@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-08-29T15:52:38.556957+08:00",
+  "generated_at": "2026-08-29T16:45:06.364018+08:00",
   "room_default": {
     "room": "",
     "campus": "",
     "building": ""
   },
   "thresholds": {
-    "warn": 9999.0,
+    "warn": 15.0,
     "high": 10.0,
     "critical": 5.0
   },

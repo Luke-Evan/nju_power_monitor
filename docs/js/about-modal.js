@@ -5,6 +5,7 @@
 var ABOUT_HTML = [
   '<h3 class="config-title">关于本项目</h3>',
   '<p style="color: var(--muted); font-size: 14px; line-height: 1.8;">',
+  '项目地址：<a href="https://github.com/Luke-Evan/nju_power_monitor" target="_blank" rel="noopener">github.com/Luke-Evan/nju_power_monitor</a><br>',
   '数据由 GitHub Actions 每日 21 点自动采集一次。',
   '</p>'
 ].join('');
