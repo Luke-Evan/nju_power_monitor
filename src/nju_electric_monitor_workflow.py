@@ -1551,8 +1551,8 @@ class NJUElectricMonitor:
                 "unit": "度"
             }
 
-            # 种子保护：JSON 缺失或行数少于 CSV 时，先用 CSV 重建 JSON，
-            # 避免"从 JSON 重建 CSV"时丢失历史（新仓库未带 JSON / 手动补 CSV 等场景）
+            # 种子保护：JSON 缺失或行数少于 CSV 时，先用 CSV 重建 JSON。避免"从 JSON 重建 CSV"时丢失历史（新仓库未带 JSON / 手动补 CSV 等场景）
+            json_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'electricity_data.json')
             try:
                 seed_csv = os.path.join(os.path.dirname(__file__), '..', 'data', 'electricity_data.csv')
                 json_count = 0
@@ -1583,7 +1583,6 @@ class NJUElectricMonitor:
             except Exception as e:
                 self.logger.warning(f"种子保护检查失败（忽略）: {e}")
             # 保存为json
-            json_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'electricity_data.json')
             with open(json_path, "a", encoding="utf-8") as f:
                 f.write(json.dumps(data, ensure_ascii=False) + "\n")
 
