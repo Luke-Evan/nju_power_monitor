@@ -21,9 +21,12 @@
 | `EMAIL_FROM` | 发件人地址（通常同 USER） | `xxx@qq.com` |
 | `EMAIL_TO` | 收件人，多个用英文逗号分隔 | `a@qq.com,b@163.com` |
 
+> 💡 **可以发给自己**：把 `EMAIL_SMTP_USER`、`EMAIL_FROM`、`EMAIL_TO` 填成同一个地址即可
+> （QQ/163 要求 FROM 与 USER 一致；自己发自己不会被判垃圾邮件）。
+
 ### 授权码获取
 
-- **QQ 邮箱**：网页版 → 设置 → 账户 → POP3/SMTP 服务 → 开启 → 短信验证生成授权码；
+- [**QQ 邮箱**](https://wx.mail.qq.com/list/readtemplate?name=app_intro.html#/agreement/authorizationCode)：网页版 → 设置 → 账户 → IMAP/SMTP 服务 → 开启 → 短信验证生成授权码；
 - **163 邮箱**：设置 → POP3/SMTP → 开启并设置客户端授权密码；
 - **Gmail**：需开启两步验证后生成「应用专用密码」。
 

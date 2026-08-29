@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""本地静态服务器：服务 docs/ 目录（纯标准库，参考 nju-power-watch 的 serve_docs.py）。
+"""本地静态服务器：服务 docs/ 目录。
 
 用法: python src/web_panel.py [port]   或设置环境变量 PORT（默认 8000）
 """
