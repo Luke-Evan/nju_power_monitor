@@ -3,6 +3,9 @@
 监控南京大学宿舍电费余额的自动化工具：每天定时采集一次，静态网站可视化，余额不足自动提醒。
 单房间、零服务器、全托管在 GitHub。
 
+> 📱💻 **部署完成后，手机或电脑浏览器打开 Pages 网址即可立刻查看**——余额、趋势、预警一目了然，
+> 不用装任何软件、不用开电脑跑服务，收藏链接随时看。
+
 本页面界面设计借鉴自 <a href="https://github.com/Chen-Rong-Zi/nju-power-watch" target="_blank" rel="noopener">nju-power-watch</a>（MIT 协议）, 本项目数据采集继承自 <a href="https://github.com/Nanxzi/nju_electric_monitor" target="_blank" rel="noopener">nju_electric_monitor</a>（MIT 协议）
 
 ## 功能
@@ -33,6 +36,7 @@
   仅用于页面显示，**不参与数据查询**
    - 据始终来自 Secrets 凭据对应 epay 账号所绑定的宿舍（即你在 epay 里自己设置的那间）
    - 换浏览器、或换URL（ `127.0.0.1` 与 `localhost` 算两个URL），都需各设置一次
+
 ## 架构
 
 ```
@@ -119,6 +123,8 @@ workflow 运行后要把数据推回仓库，需要一个有写权限的 token�
 
 Settings → Pages → Deploy from a branch → `main` / `/docs` → Save；约 1 分钟后访问 `https://<用户名>.github.io/<仓库名>/`。
 
+> ✨ **手机、电脑打开同一个网址都能立刻看到**，建议加入书签；每次采集后页面自动更新，无需任何本地操作。
+
 ### 6. 邮件预警（可选，默认关闭）
 
 SMTP 授权码、六项 Secrets、阈值与排障见 [EMAIL_ALERT.md](EMAIL_ALERT.md)。
@@ -154,10 +160,8 @@ scripts\trigger_action.bat      # token 读自第三步保存的根目录 .token
 - 仓库**不含任何凭据**：学号密码只存在于 Secrets；`config_workflow.json` 凭据字段空白；
 - 入库数据仅电量余额，不含个人信息；`logs/`、调试图 均被 .gitignore 挡在库外。
 
-## 致谢与许可
+## 许可
 
-- 界面设计借鉴自 [nju-power-watch](https://github.com/Chen-Rong-Zi/nju-power-watch)（MIT）
-- 数据采集继承自 [Nanxzi/nju_electric_monitor](https://github.com/Nanxzi/nju_electric_monitor)（MIT）
 - 本项目以 [MIT](LICENSE) 许可发布
 
 ## 免责声明
