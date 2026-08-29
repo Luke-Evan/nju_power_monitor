@@ -1551,6 +1551,37 @@ class NJUElectricMonitor:
                 "unit": "度"
             }
 
+            # 种子保护：JSON 缺失或行数少于 CSV 时，先用 CSV 重建 JSON，
+            # 避免"从 JSON 重建 CSV"时丢失历史（新仓库未带 JSON / 手动补 CSV 等场景）
+            try:
+                seed_csv = os.path.join(os.path.dirname(__file__), '..', 'data', 'electricity_data.csv')
+                json_count = 0
+                if os.path.exists(json_path):
+                    with open(json_path, 'r', encoding='utf-8') as jf:
+                        json_count = sum(1 for line in jf if line.strip())
+                csv_count = 0
+                if os.path.exists(seed_csv):
+                    with open(seed_csv, 'r', encoding='utf-8') as cf:
+                        csv_count = max(0, sum(1 for line in cf if line.strip()) - 1)
+                if csv_count > json_count:
+                    import csv as _csv
+                    seeded = []
+                    with open(seed_csv, 'r', encoding='utf-8') as cf:
+                        for row in _csv.DictReader(cf):
+                            try:
+                                seeded.append({
+                                    'timestamp': row.get('time'),
+                                    'remaining_electricity': float(row.get('num')),
+                                    'unit': row.get('unit') or '度',
+                                })
+                            except Exception:
+                                continue
+                    with open(json_path, 'w', encoding='utf-8') as jf:
+                        for item in seeded:
+                            jf.write(json.dumps(item, ensure_ascii=False) + '\n')
+                    self.logger.info(f"种子保护：JSON({json_count}行) 少于 CSV({csv_count}行)，已从 CSV 重建 JSON")
+            except Exception as e:
+                self.logger.warning(f"种子保护检查失败（忽略）: {e}")
             # 保存为json
             json_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'electricity_data.json')
             with open(json_path, "a", encoding="utf-8") as f:
