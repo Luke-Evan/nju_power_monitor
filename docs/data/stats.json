@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-29T13:38:39.867815+08:00",
+  "generated_at": "2026-08-29T14:00:11.491627+08:00",
   "room_default": {
     "room": "",
     "campus": "",
@@ -13,113 +13,43 @@
   "current_balance": 1505.6,
   "min_balance": 1505.6,
   "stats": {
-    "avg_daily_7d": 9.901429,
-    "week_consumption": 69.31,
-    "days_remaining": 152,
-    "depletion_date": "2027-01-28",
-    "today_consumption": 12.65,
+    "avg_daily_7d": 0.0,
+    "week_consumption": 0.0,
+    "days_remaining": null,
+    "depletion_date": null,
+    "today_consumption": null,
     "wow_change_pct": null
   },
   "daily": [
     {
-      "date": "2026-08-22",
-      "end_balance": 1574.91,
-      "consumption": null
-    },
-    {
-      "date": "2026-08-23",
-      "end_balance": 1564.23,
-      "consumption": 10.68
-    },
-    {
-      "date": "2026-08-24",
-      "end_balance": 1554.54,
-      "consumption": 9.69
-    },
-    {
-      "date": "2026-08-25",
-      "end_balance": 1544.33,
-      "consumption": 10.21
-    },
-    {
-      "date": "2026-08-26",
-      "end_balance": 1534.56,
-      "consumption": 9.77
-    },
-    {
-      "date": "2026-08-27",
-      "end_balance": 1523.99,
-      "consumption": 10.57
-    },
-    {
-      "date": "2026-08-28",
-      "end_balance": 1518.25,
-      "consumption": 5.74
-    },
-    {
       "date": "2026-08-29",
       "end_balance": 1505.6,
-      "consumption": 12.65
+      "consumption": null
     }
   ],
   "recharge": [
     {
       "amount": 30,
-      "days": 3
+      "days": null
     },
     {
       "amount": 50,
-      "days": 5
+      "days": null
     },
     {
       "amount": 100,
-      "days": 10
+      "days": null
     },
     {
       "amount": 200,
-      "days": 20
+      "days": null
     }
   ],
   "records": [
     {
-      "time": "2026-08-22T21:39:22.298025",
-      "num": 1574.91,
-      "consumption": null
-    },
-    {
-      "time": "2026-08-23T21:39:40.130265",
-      "num": 1564.23,
-      "consumption": 10.68
-    },
-    {
-      "time": "2026-08-24T21:57:55.784966",
-      "num": 1554.54,
-      "consumption": 9.69
-    },
-    {
-      "time": "2026-08-25T21:57:30.050542",
-      "num": 1544.33,
-      "consumption": 10.21
-    },
-    {
-      "time": "2026-08-26T22:01:27.816426",
-      "num": 1534.56,
-      "consumption": 9.77
-    },
-    {
-      "time": "2026-08-27T19:08:01.796601",
-      "num": 1523.99,
-      "consumption": 10.57
-    },
-    {
-      "time": "2026-08-28T06:56:13.396173",
-      "num": 1518.25,
-      "consumption": 5.74
-    },
-    {
-      "time": "2026-08-29T12:16:00.262228",
+      "time": "2026-08-29T14:00:07.619146",
       "num": 1505.6,
-      "consumption": 12.65
+      "consumption": null
     }
   ]
 }
