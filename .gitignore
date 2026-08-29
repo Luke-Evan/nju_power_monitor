@@ -1,0 +1,23 @@
+# 凭据（绝不入库）
+config.json
+
+# 环境/缓存
+.venv/
+__pycache__/
+*.py[cod]
+uv.lock
+
+# 运行日志：只进 artifact，不入库（保证 artifact 只含当次运行日志）
+/logs/
+
+# 数据派生产物：只提交 CSV
+/data/*.json
+/data/*.png
+
+# IDE/系统
+.vscode/
+.DS_Store
+
+# 本地令牌（绝不入库）
+.token
+

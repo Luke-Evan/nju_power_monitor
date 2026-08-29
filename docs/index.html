@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的房间 · 电费监控</title>
+  <script src="js/vendor/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="topnav">
+    <div class="topnav-inner">
+      <span class="logo">⚡ 电费监控</span>
+      <div class="nav-links">
+        <a href="index.html" class="active">我的房间</a>
+        <a href="javascript:void(0)" onclick="openAboutModal();return false">关于</a>
+      </div>
+      <button class="btn" id="btn-config">⚙️ 设置房间</button>
+    </div>
+  </nav>
+
+  <!-- 初始加载遮罩 -->
+  <div class="initial-loading" id="initial-loading">
+    <div class="loading-content">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">加载中...</div>
+    </div>
+  </div>
+
+  <main class="main">
+    <!-- 房间信息 -->
+    <section class="room-hero" id="room-info">
+      <div class="room-header">
+        <div>
+          <h1 class="room-title" id="room-name">--</h1>
+          <p class="room-meta"><span id="room-campus">--</span> · <span id="room-building">--</span></p>
+        </div>
+        <div class="balance-badge" id="current-balance">--度</div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card stat-card-hover" id="stat-avg-card">
+          <div class="consumption-tooltip" id="stat-avg-tooltip">
+            <span class="tooltip-icon">💡</span>
+            <span class="tooltip-value" id="stat-avg-analogy">--</span>
+          </div>
+          <div class="stat-label">日均消耗</div>
+          <div class="stat-value" id="stat-avg">--</div>
+        </div>
+        <div class="stat-card stat-card-hover" id="stat-week-card">
+          <div class="consumption-tooltip" id="stat-week-tooltip">
+            <span class="tooltip-icon">🔥</span>
+            <span class="tooltip-value" id="stat-week-analogy">--</span>
+          </div>
+          <div class="stat-label">本周消耗</div>
+          <div class="stat-value accent" id="stat-week">--</div>
+        </div>
+        <div class="stat-card stat-card-hover" id="stat-days-card">
+          <div class="stat-label">预计可用</div>
+          <div class="stat-value" id="stat-days">--</div>
+        </div>
+        <div class="stat-card stat-card-hover">
+          <div class="stat-label">最低余额</div>
+          <div class="stat-value" id="stat-min">--</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 趋势图 -->
+    <section class="chart-section" id="chart-section">
+      <div class="section-header">
+        <h2 class="section-title">电费变化趋势</h2>
+        <div class="chart-controls">
+          <button class="btn active" data-range="7">7天</button>
+          <button class="btn" data-range="30">30天</button>
+          <button class="btn" data-range="all">全部</button>
+        </div>
+      </div>
+      <div class="chart-container">
+        <canvas id="trend-chart"></canvas>
+      </div>
+    </section>
+
+    <!-- 预测预警 -->
+    <section class="prediction-section" id="prediction-section">
+      <div class="prediction-card" id="predict-card">
+        <div class="prediction-icon success" id="predict-icon">✅</div>
+        <h3 class="prediction-title">电量预警</h3>
+        <p class="prediction-text">
+          当前余额预计可使用 <span class="prediction-highlight" id="predict-days">--</span> 天，
+          将于 <span class="prediction-highlight" id="predict-date">--</span> 耗尽<span id="predict-note"></span>
+        </p>
+      </div>
+      <div class="prediction-card">
+        <div class="prediction-icon info">📊</div>
+        <h3 class="prediction-title">用电分析</h3>
+        <p class="prediction-text">
+          近期日均消耗 <span class="prediction-highlight" id="predict-avg">--</span> 度，
+          较上周 <span class="prediction-highlight" id="predict-change">--</span>
+        </p>
+      </div>
+    </section>
+
+    <!-- 耗电量直观描述 -->
+    <section class="main-analogy-card" id="main-analogy-card">
+      <div class="main-analogy-card-header">
+        <span class="main-analogy-card-title">⚡ 今日耗电量直观感受</span>
+      </div>
+      <div class="main-analogy-icon" id="main-analogy-icon">💡</div>
+      <div class="main-analogy-value" id="main-analogy-value">--</div>
+      <div class="main-analogy-label" id="main-analogy-label">--</div>
+      <div class="main-analogy-desc">
+        今日耗电 <span class="main-analogy-consumption" id="main-analogy-consumption">--</span> 度
+        <span id="main-analogy-extra"></span>
+      </div>
+    </section>
+
+    <!-- 今日用电排名：单房间无全校数据，按 spec 整段注释不渲染
+    <section class="ranking-percent-card" id="ranking-percent-card">
+      <h3 class="ranking-title">🏆 今日用电排名</h3>
+      <div class="ranking-grid">（略）</div>
+    </section>
+    -->
+
+    <!-- 充值预估 -->
+    <section class="recharge-section" id="recharge-section">
+      <h2 class="section-title">充值建议</h2>
+      <p style="color: var(--muted); font-size: 14px; margin: 8px 0 0;">根据您的用电习惯，选择合适的充值金额</p>
+      <div class="recharge-options" id="recharge-options">
+        <!-- 动态填充 -->
+      </div>
+    </section>
+
+    <footer class="site-footer">
+      界面设计借鉴自 <a href="https://github.com/Chen-Rong-Zi/nju-power-watch" target="_blank" rel="noopener">nju-power-watch</a>（MIT）·  数据采集继承自 <a href="https://github.com/Nanxzi/nju_electric_monitor" target="_blank" rel="noopener">nju_electric_monitor</a>（MIT 协议）
+    </footer>
+  </main>
+
+  <!-- 配置面板 -->
+  <div class="config-overlay" id="config-overlay"></div>
+  <div class="config-panel" id="config-panel">
+    <h3 class="config-title">配置您的房间</h3>
+    <div class="form-group">
+      <label class="form-label">校区</label>
+      <select class="form-select" id="config-campus">
+        <option value="">请选择校区</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">楼栋</label>
+      <select class="form-select" id="config-building" disabled>
+        <option value="">请先选择校区</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">房间</label>
+      <select class="form-select" id="config-room" disabled>
+        <option value="">请先选择楼栋</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">提醒阈值（度）</label>
+      <input type="number" class="form-select" id="config-th-warn" placeholder="15">
+    </div>
+    <button class="btn btn-primary" style="width: 100%; margin-top: 8px;" id="btn-save-config">保存配置</button>
+  </div>
+
+  <script src="js/room-lists.js"></script>
+  <script src="js/analogies.js"></script>
+  <script src="js/about-modal.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+    "username": "",
+    "password": "",
+    "auto_login": true,
+    "headless_mode": true,
+    "captcha_retry_count": 4,
+    "save_captcha_images": true,
+    "log_level": "INFO",
+    "test_mode": false,
+    "enable_email_alert": false,
+    "alert_threshold_warn": 15,
+    "alert_threshold_high": 10,
+    "alert_threshold_critical": 5,
+    "room_default": {
+        "room": "",
+        "campus": "",
+        "building": ""
+    }
+} 
