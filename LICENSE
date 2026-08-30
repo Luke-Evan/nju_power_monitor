@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2025 Xiangm Wu
+Copyright (c) 2026 Luke-Evan
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,6 +20,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-Copyright (c) 2026 Luke-Evan (modified versions)
+---
+This project includes code derived from the following MIT-licensed projects:
 
-Copyright (c) 2026 Chen-Rong-Zi, Youran Xu (nju-power-watch UI portions)
+Copyright (c) 2026 Chen-Rong-Zi, Youran Xu
+
+Copyright (c) 2025 Xiangm Wu

@@ -6,8 +6,6 @@
 > 📱💻 **部署完成后，手机或电脑浏览器打开 Pages 网址即可立刻查看**——余额、趋势、预警一目了然，
 > 不用装任何软件、不用开电脑跑服务，收藏链接随时看。
 
-本页面界面设计借鉴自 <a href="https://github.com/Chen-Rong-Zi/nju-power-watch" target="_blank" rel="noopener">nju-power-watch</a>（MIT 协议）, 本项目数据采集继承自 <a href="https://github.com/Nanxzi/nju_electric_monitor" target="_blank" rel="noopener">nju_electric_monitor</a>（MIT 协议）
-
 ## 功能
 
 **触发（执行都在云端 Actions）**
@@ -162,9 +160,16 @@ scripts\trigger_action.bat      # token 读自第三步保存的根目录 .token
 - 仓库**不含任何凭据**：学号密码只存在于 Secrets；`config_workflow.json` 凭据字段空白；
 - 入库数据仅电量余额，不含个人信息；`logs/`、调试图 均被 .gitignore 挡在库外。
 
-## 许可
+## 许可与致谢
 
-- 本项目以 [MIT](LICENSE) 许可发布
+本项目采用 [MIT 许可证](LICENSE) 开源。
+
+在开发过程中，本项目借鉴与使用了以下优秀的开源项目：
+
+* **界面设计**：借鉴自 [nju-power-watch](https://github.com/Chen-Rong-Zi/nju-power-watch)（遵循 MIT 协议）。
+* **数据采集**：继承自 [nju_electric_monitor](https://github.com/Nanxzi/nju_electric_monitor)（遵循 MIT 协议）。
+
+感谢原作者们的无私分享与贡献！
 
 ## 免责声明
 
