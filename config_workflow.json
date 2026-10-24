@@ -11,6 +11,10 @@
     "alert_threshold_warn": 15,
     "alert_threshold_high": 10,
     "alert_threshold_critical": 5,
+    "run_attempts": 3,
+    "run_retry_delay": 20,
+    "recharge_button_timeout": 40,
+    "electricity_extract_timeout": 45,
     "room_default": {
         "room": "",
         "campus": "",

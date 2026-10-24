@@ -67,6 +67,14 @@ try:
 except ImportError:
     pass
 
+
+class _SuppressNonErrorFilter(logging.Filter):
+    """轮询等待期间只放行 ERROR 及以上级别的日志，避免同一条告警刷屏。"""
+
+    def filter(self, record):
+        return record.levelno >= logging.ERROR
+
+
 class NJUElectricMonitor:
     def __init__(self, config_file="config_workflow.json"):
         """初始化监控器"""
@@ -235,7 +243,11 @@ class NJUElectricMonitor:
                     "enable_email_alert": True,
                     "alert_threshold_warn": 200,
                     "alert_threshold_high": 10,
-                    "alert_threshold_critical": 5
+                    "alert_threshold_critical": 5,
+                    "run_attempts": 3,
+                    "run_retry_delay": 20,
+                    "recharge_button_timeout": 40,
+                    "electricity_extract_timeout": 45
                 }
                 with open(config_path, 'w', encoding='utf-8') as f:
                     json.dump(default_config, f, indent=4, ensure_ascii=False)
@@ -273,6 +285,17 @@ class NJUElectricMonitor:
         chrome_options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
         chrome_options.add_argument("--disable-extensions")
         chrome_options.add_argument("--disable-plugins")
+        # 非 Windows（CI）：显式指定系统已装的 Chrome，避免 Selenium Manager 去下载
+        # 150MB 的 Chrome for Testing
+        if not platform.system().lower().startswith('win'):
+            for candidate in ('/usr/bin/google-chrome',
+                              '/usr/bin/google-chrome-stable',
+                              '/usr/bin/chromium-browser',
+                              '/usr/bin/chromium'):
+                if os.path.exists(candidate):
+                    chrome_options.binary_location = candidate
+                    self.logger.info(f"使用系统浏览器: {candidate}")
+                    break
         try:
             # 根据平台选择 driver：Windows 优先使用仓库内的 chromedriver；Linux/macOS 优先使用系统 PATH 中的 chromedriver
             driver_path = None
@@ -887,39 +910,61 @@ class NJUElectricMonitor:
                     return False
 
                 # 生成轨迹并执行拖拽
+                # 注意：原实现每移动一步就 perform() 一次（每步一次 W3C 往返），慢 runner
+                # 上单次拖拽会涨到 70 秒以上；改用 pause() 保证人类节奏，并分块合并往返。
                 track = self.generate_slider_track(offset_x)
 
-                actions = ActionChains(self.driver)
-                actions.click_and_hold(slider_btn).perform()
-                time.sleep(random.uniform(0.1, 0.2))
+                # 分块下发：每块 20 步。相比"每步一次 perform"把往返次数从 ~150 降到个位数，
+                # 同时避免单次 perform 里堆几百个 action。
+                drag_start = time.time()
+                for i in range(0, len(track), 20):
+                    actions = ActionChains(self.driver)
+                    if i == 0:
+                        actions.click_and_hold(slider_btn)
+                        actions.pause(random.uniform(0.1, 0.2))
+                    for step in track[i:i + 20]:
+                        actions.move_by_offset(step, 0)
+                        actions.pause(random.uniform(0.01, 0.03))
+                    actions.perform()
 
-                for step in track:
-                    actions.move_by_offset(step, 0).perform()
-                    time.sleep(random.uniform(0.01, 0.03))
+                release = ActionChains(self.driver)
+                release.pause(0.1)
+                release.release()
+                release.perform()
+                self.logger.info(
+                    f"滑块拖拽已下发（{len(track)} 段，耗时 {time.time() - drag_start:.1f}s）"
+                )
 
-                time.sleep(0.1)
-                actions.release().perform()
-                time.sleep(2)
-
-                # 检查验证结果
-                # 成功标志：sliderDiv 消失 或 出现成功标记
-                try:
-                    slider_div = self.driver.find_element(By.ID, "sliderDiv")
-                    if not slider_div.is_displayed():
-                        self.logger.info("滑块验证通过（sliderDiv 已消失）")
-                        return True
-                except NoSuchElementException:
-                    self.logger.info("滑块验证通过（sliderDiv 元素不存在）")
-                    return True
-
-                for selector in ["[class*='success']", ".verify-success", ".sliderContainer.success"]:
+                # 轮询验证结果（成功标志：sliderDiv 消失 或出现成功标记），最多等 8 秒。
+                # 原来的固定 sleep(2) 在慢 runner 上不够，偶发误判为失败并重复拖拽。
+                deadline = time.time() + 8
+                passed = False
+                while True:
                     try:
-                        elem = self.driver.find_element(By.CSS_SELECTOR, selector)
-                        if elem.is_displayed():
-                            self.logger.info("滑块验证通过（检测到成功标记）")
-                            return True
+                        slider_div = self.driver.find_element(By.ID, "sliderDiv")
+                        if not slider_div.is_displayed():
+                            self.logger.info("滑块验证通过（sliderDiv 已消失）")
+                            passed = True
                     except NoSuchElementException:
-                        pass
+                        self.logger.info("滑块验证通过（sliderDiv 元素不存在）")
+                        passed = True
+
+                    if not passed:
+                        for selector in ["[class*='success']", ".verify-success", ".sliderContainer.success"]:
+                            try:
+                                elem = self.driver.find_element(By.CSS_SELECTOR, selector)
+                                if elem.is_displayed():
+                                    self.logger.info("滑块验证通过（检测到成功标记）")
+                                    passed = True
+                                    break
+                            except NoSuchElementException:
+                                pass
+
+                    if passed:
+                        return True
+                    if time.time() >= deadline:
+                        break
+                    time.sleep(0.3)
 
                 self.logger.warning(f"滑块拖拽第 {attempt} 次未通过验证")
 
@@ -1400,8 +1445,8 @@ class NJUElectricMonitor:
             self.logger.error(f"等待登录成功时出错: {e}")
             return False
     
-    def click_recharge_button(self):
-        """点击'去充值'按钮"""
+    def _click_recharge_button_once(self):
+        """单次尝试点击'去充值'按钮（不做等待），由 click_recharge_button 轮询调用。"""
         try:
             self.logger.info("查找'去充值'按钮...")
             recharge_button = None
@@ -1433,7 +1478,8 @@ class NJUElectricMonitor:
             try:
                 recharge_button.click()
                 self.logger.info("已点击充值按钮")
-                time.sleep(3)
+                # 不再固定 sleep 3s：详情页渲染由 extract_remaining_electricity 轮询兜底
+                time.sleep(0.5)
                 return True
             except Exception as e:
                 self.logger.error(f"点击充值按钮时发生异常: {e}")
@@ -1443,11 +1489,9 @@ class NJUElectricMonitor:
             self.logger.error(f"点击充值按钮时出错: {e}")
             return False
     
-    def extract_remaining_electricity(self):
-        """提取剩余电量信息"""
+    def _extract_remaining_electricity_once(self):
+        """单次尝试提取剩余电量（不做等待）。成功返回 float，失败返回 None。"""
         try:
-            self.logger.info("开始提取剩余电量信息...")
-            
             # 方法1：使用精确的CSS选择器查找电量信息
             try:
                 electricity_element = self.driver.find_element(By.CSS_SELECTOR, "span.fl")
@@ -1536,6 +1580,90 @@ class NJUElectricMonitor:
             self.logger.error(f"提取剩余电量时出错: {e}")
             return None
     
+    def click_recharge_button(self, timeout=None):
+        """点击'去充值'按钮。
+
+        URL 跳转完成后页面内容仍由前端 JS 渲染，所以这里轮询等待按钮出现，
+        而不是一次性 find_element（慢 runner 上会直接踩空）。
+        """
+        if timeout is None:
+            timeout = float(self.config.get("recharge_button_timeout", 40))
+        self.logger.info(f"查找'去充值'按钮（最多等待 {timeout:.0f}s）...")
+
+        deadline = time.time() + timeout
+        attempt = 0
+        while True:
+            attempt += 1
+            quiet_filter = None
+            if attempt > 1:
+                quiet_filter = _SuppressNonErrorFilter()
+                self.logger.addFilter(quiet_filter)
+            try:
+                clicked = self._click_recharge_button_once()
+            finally:
+                if quiet_filter is not None:
+                    self.logger.removeFilter(quiet_filter)
+
+            if clicked:
+                if attempt > 1:
+                    self.logger.info(f"第 {attempt} 次轮询后点击'去充值'成功")
+                return True
+            remaining = deadline - time.time()
+            if remaining <= 0:
+                break
+            time.sleep(min(1, remaining))
+
+        self.logger.error(f"等待 {timeout:.0f}s 后仍未找到可点击的'去充值'按钮")
+        return False
+
+    def extract_remaining_electricity(self, timeout=None):
+        """提取剩余电量。
+
+        详情页的电量数字由前端 JS 异步请求后填充，单次 find_element 极易踩空
+        （历史上每次失败都是这个原因）。这里在 timeout 秒内轮询重试，命中即返回。
+        轮询期间用日志过滤器压制重复的 info/warning，只在超时后给一次完整结论。
+        """
+        if timeout is None:
+            timeout = float(self.config.get("electricity_extract_timeout", 45))
+        self.logger.info(f"开始提取剩余电量信息（最多等待 {timeout:.0f}s）...")
+
+        deadline = time.time() + timeout
+        attempt = 0
+        while True:
+            attempt += 1
+            quiet_filter = None
+            if attempt > 1:
+                quiet_filter = _SuppressNonErrorFilter()
+                self.logger.addFilter(quiet_filter)
+            try:
+                value = self._extract_remaining_electricity_once()
+            finally:
+                if quiet_filter is not None:
+                    self.logger.removeFilter(quiet_filter)
+
+            if value is not None:
+                if attempt > 1:
+                    self.logger.info(f"轮询第 {attempt} 次后成功提取剩余电量: {value} 度")
+                return value
+
+            remaining = deadline - time.time()
+            if remaining <= 0:
+                break
+            if attempt == 1:
+                self.logger.info("首次未找到电量信息（详情页可能仍在加载），继续轮询...")
+            time.sleep(min(2, remaining))
+
+        # 超时后补一条诊断信息，便于区分"没跳页"和"页面报错"
+        try:
+            ready_state = self.driver.execute_script("return document.readyState")
+            self.logger.warning(
+                f"超时时的页面状态: {self.driver.current_url} readyState={ready_state}"
+            )
+        except Exception:
+            pass
+        self.logger.warning(f"在 {timeout:.0f}s 内尝试 {attempt} 次，仍未能提取到剩余电量信息")
+        return None
+
     def save_data(self, remaining_electricity):
         """保存数据到文件"""
         try:
@@ -2068,18 +2196,41 @@ def main():
     if len(sys.argv) > 1:
         config_file = sys.argv[1]
     
-    monitor = NJUElectricMonitor(config_file)
+    # 整轮重试：CI 上偶发的页面渲染/登录抖动，不应该让当天数据直接丢掉。
+    # 每次尝试都会新建 NJUElectricMonitor（新浏览器实例），避免复用脏会话。
     try:
-        success = monitor.run()
-        if not success:
-            print("监控流程失败，未能成功获取电量数据")
+        cfg_path = os.path.join(os.path.dirname(__file__), '..', config_file)
+        with open(cfg_path, 'r', encoding='utf-8') as f:
+            cfg = json.load(f)
+    except Exception:
+        cfg = {}
+    max_attempts = max(1, int(cfg.get("run_attempts", 3) or 3))
+    retry_delay = max(0, int(cfg.get("run_retry_delay", 20) or 0))
+
+    last_error = None
+    for attempt in range(1, max_attempts + 1):
+        print(f"[尝试 {attempt}/{max_attempts}] 开始运行监控流程")
+        try:
+            monitor = NJUElectricMonitor(config_file)
+            if monitor.run():
+                print(f"监控流程成功（第 {attempt} 次尝试）")
+                return
+            print(f"[尝试 {attempt}/{max_attempts}] 失败：未能成功获取电量数据")
+        except KeyboardInterrupt:
+            print("\n用户中断程序")
             sys.exit(1)
-    except KeyboardInterrupt:
-        print("\n用户中断程序")
-        sys.exit(1)
-    except Exception as e:
-        print(f"程序运行出错: {e}")
-        sys.exit(1)
+        except Exception as e:
+            last_error = e
+            print(f"[尝试 {attempt}/{max_attempts}] 出错: {e}")
+
+        if attempt < max_attempts:
+            print(f"等待 {retry_delay}s 后进行第 {attempt + 1} 次尝试...")
+            time.sleep(retry_delay)
+
+    print("监控流程失败，未能成功获取电量数据")
+    if last_error is not None:
+        print(f"最后一次尝试的异常: {last_error}")
+    sys.exit(1)
 
 if __name__ == "__main__":
     main()
