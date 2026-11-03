@@ -53,20 +53,40 @@
       font-weight: 600;
       letter-spacing: -0.02em;
     }
-    .nav-links {
+    .nav-actions {
       display: flex;
-      gap: 32px;
+      align-items: center;
+      gap: 12px;
     }
-    .nav-links a {
-      color: var(--muted);
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 500;
-      transition: color 0.15s;
-    }
-    .nav-links a:hover,
-    .nav-links a.active {
+    /* GitHub 图标按钮（章鱼手挥动动画取自 tholman/github-corners） */
+    .github-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border: 1px solid var(--border);
+      border-radius: 50%;
       color: var(--fg);
+      background: transparent;
+      transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.15s;
+    }
+    .github-link svg { display: block; }
+    .github-link:hover,
+    .github-link:focus-visible {
+      background: var(--fg);
+      border-color: var(--fg);
+      color: var(--surface);
+    }
+    .github-link:active { transform: scale(0.94); }
+    .github-link:hover svg { animation: octocat-wave 560ms ease-in-out; }
+    @keyframes octocat-wave {
+      0%, 100% { transform: rotate(0); }
+      20%, 60% { transform: rotate(-12deg); }
+      40%, 80% { transform: rotate(9deg); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .github-link:hover svg { animation: none; }
     }
 
     /* 主内容 */
