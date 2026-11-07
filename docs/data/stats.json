@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-07T03:50:17.900784+08:00",
+  "generated_at": "2026-11-08T01:56:53.966981+08:00",
   "room_default": {
     "room": "",
     "campus": "",
@@ -10,15 +10,15 @@
     "high": 10.0,
     "critical": 5.0
   },
-  "current_balance": 1205.62,
-  "min_balance": 1205.62,
+  "current_balance": 1202.47,
+  "min_balance": 1202.47,
   "stats": {
-    "avg_daily_7d": 3.211429,
-    "week_consumption": 22.48,
-    "days_remaining": 375,
-    "depletion_date": "2027-11-17",
-    "today_consumption": 3.25,
-    "wow_change_pct": -0.706714
+    "avg_daily_7d": 3.275714,
+    "week_consumption": 22.93,
+    "days_remaining": 367,
+    "depletion_date": "2027-11-10",
+    "today_consumption": 3.15,
+    "wow_change_pct": -1.418745
   },
   "daily": [
     {
@@ -395,6 +395,11 @@
       "date": "2026-11-07",
       "end_balance": 1205.62,
       "consumption": 3.25
+    },
+    {
+      "date": "2026-11-08",
+      "end_balance": 1202.47,
+      "consumption": 3.15
     }
   ],
   "recharge": [
@@ -408,11 +413,11 @@
     },
     {
       "amount": 100,
-      "days": 31
+      "days": 30
     },
     {
       "amount": 200,
-      "days": 62
+      "days": 61
     }
   ],
   "records": [
@@ -800,6 +805,11 @@
       "time": "2026-11-07T03:50:17.115080",
       "num": 1205.62,
       "consumption": 3.25
+    },
+    {
+      "time": "2026-11-08T01:56:53.313753",
+      "num": 1202.47,
+      "consumption": 3.15
     }
   ]
 }
